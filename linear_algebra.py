@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Tuple, Callable
+import math
 
 Vector = List[float]
 
@@ -61,3 +62,113 @@ def dot(v: Vector, w: Vector) -> float:
   assert len(v) == len(w), "vectors must be same length"
   return sum(v_i * w_i for v_i, w_i in zip(v, w))
 assert dot([1, 2, 3], [4, 5, 6]) == 32 # 1 * 4 + 2 * 5 + 3 * 6
+
+def sum_of_squares(v: Vector) -> float:
+  """Returns v_1 * v_1 + ... + v_n * v_n"""
+  return dot(v, v)
+
+assert sum_of_squares([1, 2, 3]) == 14 # 1 * 1 + 2 * 2 + 3 * 3
+
+def magnitude(v: Vector) -> float:
+  """Returns the magnitude (or length) of v"""
+  return math.sqrt(sum_of_squares(v))
+
+def distance(v: Vector, w: Vector) -> float:
+  return magnitude(substract(v, w))
+
+###
+# Matrices
+
+Matrix = List[List[float]]
+
+A = [[1, 2, 3],    # A has 2 rows and 3 columns
+     [4, 5, 6]]
+
+B = [[1, 2], # B has 3 rows and 2 columns
+     [3, 4],
+     [5, 6]]
+
+def shape(A: Matrix) -> Tuple[int, int]:
+  """Returns (# of rows of A, # of columns of A)"""
+  num_rows = len(A)
+  num_cols = len(A[0]) if A else 0 # number of elements in first row
+  return num_rows, num_cols
+
+assert shape([[1, 2, 3], [4, 5, 6]]) == (2, 3) # 2 rows, 3 columns
+
+def get_row(A: Matrix, i: int) -> Vector:
+  """Returns the i-th row of A (as a Vector)"""
+  return A[i] # A[i] is already the ith row
+
+def get_column(A: Matrix, j: int) -> Vector:
+  """Returns the j-th column of A (as a Vector)"""
+  return [A_i[j]         # jth element row A_i
+          for A_i in A]  # for each row A_i
+
+def make_matrix(num_rows: int,
+                num_cols: int,
+                entry_fn: Callable[[int, int], float]) -> Matrix:
+  """
+  Returns a num_rows x num_cols matrix
+  whose (i, j)-th entry is entry_fn(i, j)
+  """
+
+  return [[entry_fn(i, j)             # given i, create a list
+           for j in range(num_cols)]  #   [entry_fn(i, 0), ...]
+          for i in range(num_rows)]   # create one list for each i
+
+
+          # m = []
+          # for i in range(num_rows):
+          #   n = []
+          #   for j in range(num_cols):
+          #     n.append(entry_fn(i, j))
+
+          #   m.append(n)
+
+def identity_matrix(n: int) -> Matrix:
+  """Returns the n x n identity matrix"""
+  return make_matrix(n, n, lambda i, j: 1 if i == j else 0)
+
+assert identity_matrix(5) == [[1, 0, 0, 0, 0],
+                              [0, 1, 0, 0, 0],
+                              [0, 0, 1, 0, 0],
+                              [0, 0, 0, 1, 0],
+                              [0, 0, 0, 0, 1]]
+
+#            user 0  1  2  3  4  5  6  7  8  9
+#
+friend_matrix = [[0, 1, 1, 0, 0, 0, 0, 0, 0, 0], # user 0
+                 [1, 0, 1, 1, 0, 0, 0, 0, 0, 0], # user 1
+                 [1, 1, 0, 1, 0, 0, 0, 0, 0, 0], # user 2
+                 [0, 1, 1, 0, 1, 0, 0, 0, 0, 0], # user 3
+                 [0, 0, 0, 1, 0, 1, 0, 0, 0, 0], # user 4
+                 [0, 0, 0, 0, 1, 0, 1, 1, 0, 0], # user 5
+                 [0, 0, 0, 0, 0, 1, 0, 0, 1, 0], # user 6
+                 [0, 0, 0, 0, 0, 1, 0, 0, 1, 0], # user 7
+                 [0, 0, 0, 0, 0, 0, 1, 1, 0, 1], # user 8
+                 [0, 0, 0, 0, 0, 0, 0, 0, 1, 0]] # user 9
+
+def test_identity_matrix(M: Matrix) -> bool:
+  """Test if a M is an identity matrix"""
+
+  if len(M) == 0 or len(M[0]) == 0:
+    # Return False if the matrix is empty ([[]] or [])
+    return False
+  
+  for i in M:
+    # Return False if matrix is not square
+    if len(M) != len(i):
+      return False
+  
+  for i, row in enumerate(M):
+    for j, col in enumerate(row):
+      if i == j and col == 0:
+        return False
+      if i != j and col == 1:
+        return False
+    
+  return True
+
+assert not test_identity_matrix(friend_matrix)
+assert test_identity_matrix(identity_matrix(4))
