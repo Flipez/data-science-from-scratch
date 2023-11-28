@@ -156,12 +156,9 @@ def test_identity_matrix(M: Matrix) -> bool:
     # Return False if the matrix is empty ([[]] or [])
     return False
   
-  for i in M:
-    # Return False if matrix is not square
-    if len(M) != len(i):
-      return False
-  
   for i, row in enumerate(M):
+    if len(M) != len(row):
+      return False
     for j, col in enumerate(row):
       if i == j and col == 0:
         return False
